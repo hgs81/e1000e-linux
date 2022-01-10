@@ -1,24 +1,5 @@
-/*
- * Intel PRO/1000 Linux driver
- * Copyright(c) 1999 - 2014 Intel Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "COPYING".
- *
- * Contact Information:
- * Linux NICS <linux.nics@intel.com>
- * e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
- * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
- */
+// SPDX-License-Identifier: GPL-2.0
+/* Copyright(c) 1999 - 2020 Intel Corporation. */
 
 /* 82571EB Gigabit Ethernet Controller
  * 82571EB Gigabit Ethernet Controller (Copper)
@@ -269,7 +250,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 		 * enabled.
 		 */
 		mac->arc_subsystem_valid = !!(er32(FWSM) &
-					      E1000_FWSM_MODE_MASK);
+					       E1000_FWSM_MODE_MASK);
 		break;
 	case e1000_82574:
 	case e1000_82583:
@@ -517,7 +498,9 @@ static void e1000_put_hw_semaphore_82571(struct e1000_hw *hw)
 	u32 swsm;
 
 	swsm = er32(SWSM);
+
 	swsm &= ~(E1000_SWSM_SMBI | E1000_SWSM_SWESMBI);
+
 	ew32(SWSM, swsm);
 }
 
@@ -2029,7 +2012,7 @@ const struct e1000_info e1000_82573_info = {
 	.flags2			= FLAG2_DISABLE_ASPM_L1
 				  | FLAG2_DISABLE_ASPM_L0S,
 	.pba			= 20,
-	.max_hw_frame_size	= ETH_FRAME_LEN + ETH_FCS_LEN,
+	.max_hw_frame_size	= VLAN_ETH_FRAME_LEN + ETH_FCS_LEN,
 	.get_variants		= e1000_get_variants_82571,
 	.mac_ops		= &e82571_mac_ops,
 	.phy_ops		= &e82_phy_ops_m88,
@@ -2054,7 +2037,11 @@ const struct e1000_info e1000_82574_info = {
 				  | FLAG2_DISABLE_ASPM_L0S
 				  | FLAG2_DISABLE_ASPM_L1
 				  | FLAG2_NO_DISABLE_RX
-				  | FLAG2_DMA_BURST,
+				  | FLAG2_DMA_BURST
+				/* Factor out systim sanitization,
+				* added flag.
+				*/
+				  | FLAG2_CHECK_SYSTIM_OVERFLOW,
 	.pba			= 32,
 	.max_hw_frame_size	= DEFAULT_JUMBO,
 	.get_variants		= e1000_get_variants_82571,
@@ -2078,7 +2065,11 @@ const struct e1000_info e1000_82583_info = {
 				  | FLAG_HAS_CTRLEXT_ON_LOAD,
 	.flags2			= FLAG2_DISABLE_ASPM_L0S
 				  | FLAG2_DISABLE_ASPM_L1
-				  | FLAG2_NO_DISABLE_RX,
+				  | FLAG2_NO_DISABLE_RX
+                                /* Factor out systim sanitization,
+				* added flag.
+				*/
+				  | FLAG2_CHECK_SYSTIM_OVERFLOW,
 	.pba			= 32,
 	.max_hw_frame_size	= DEFAULT_JUMBO,
 	.get_variants		= e1000_get_variants_82571,

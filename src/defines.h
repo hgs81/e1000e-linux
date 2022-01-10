@@ -1,24 +1,5 @@
-/*
- * Intel PRO/1000 Linux driver
- * Copyright(c) 1999 - 2014 Intel Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "COPYING".
- *
- * Contact Information:
- * Linux NICS <linux.nics@intel.com>
- * e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
- * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
- */
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright(c) 1999 - 2020 Intel Corporation. */
 
 #ifndef _E1000E_DEFINES_H_
 #define _E1000E_DEFINES_H_
@@ -142,6 +123,8 @@
 #define E1000_RCTL_LBM_TCVR	0x000000C0	/* tcvr loopback mode */
 #define E1000_RCTL_DTYP_PS	0x00000400	/* Packet Split descriptor */
 #define E1000_RCTL_RDMTS_HALF	0x00000000	/* Rx desc min thresh size */
+#define E1000_RCTL_RDMTS_HEX	0x00010000
+#define E1000_RCTL_RDMTS1_HEX	E1000_RCTL_RDMTS_HEX
 #define E1000_RCTL_MO_SHIFT	12	/* multicast offset shift */
 #define E1000_RCTL_MO_3		0x00003000	/* multicast offset 15:4 */
 #define E1000_RCTL_BAM		0x00008000	/* broadcast enable */
@@ -239,7 +222,12 @@
 #define E1000_STATUS_LAN_INIT_DONE	0x00000200	/* Lan Init Compltn by NVM */
 #define E1000_STATUS_PHYRA		0x00000400	/* PHY Reset Asserted */
 #define E1000_STATUS_GIO_MASTER_ENABLE	0x00080000	/* Master request status */
+#define E1000_STATUS_2P5_SKU		0x00001000	/* Val of 2.5GBE SKU strap */
+#define E1000_STATUS_2P5_SKU_OVER	0x00002000	/* Val of 2.5GBE SKU Over */
+#define E1000_STATUS_PCIM_STATE		0x40000000	/* PCIm function state */
+#define PCIM_DMOFF_EXIT_TIMEOUT 100
 
+#define SPEED_2500	2500
 #define HALF_DUPLEX	1
 #define FULL_DUPLEX	2
 
@@ -249,11 +237,16 @@
 #define ADVERTISE_100_FULL		0x0008
 #define ADVERTISE_1000_HALF		0x0010	/* Not used, just FYI */
 #define ADVERTISE_1000_FULL		0x0020
+#define ADVERTISE_2500_HALF		0x0040	/* NOT used, just FYI */
+#define ADVERTISE_2500_FULL		0x0080
 
 /* 1000/H is not supported, nor spec-compliant. */
 #define E1000_ALL_SPEED_DUPLEX	( \
 	ADVERTISE_10_HALF | ADVERTISE_10_FULL | ADVERTISE_100_HALF | \
 	ADVERTISE_100_FULL | ADVERTISE_1000_FULL)
+#define E1000_ALL_SPEED_DUPLEX_2500 ( \
+	ADVERTISE_10_HALF | ADVERTISE_10_FULL | ADVERTISE_100_HALF | \
+	ADVERTISE_100_FULL | ADVERTISE_1000_FULL | ADVERTISE_2500_FULL)
 #define E1000_ALL_NOT_GIG	( \
 	ADVERTISE_10_HALF | ADVERTISE_10_FULL | ADVERTISE_100_HALF | \
 	ADVERTISE_100_FULL)
@@ -262,6 +255,7 @@
 #define E1000_ALL_HALF_DUPLEX	(ADVERTISE_10_HALF | ADVERTISE_100_HALF)
 
 #define AUTONEG_ADVERTISE_SPEED_DEFAULT		E1000_ALL_SPEED_DUPLEX
+#define AUTONEG_ADVERTISE_SPEED_DEFAULT_2500	E1000_ALL_SPEED_DUPLEX_2500
 
 /* LED Control */
 #define E1000_PHY_LED0_MODE_MASK	0x00000007
@@ -325,8 +319,8 @@
 #define E1000_RFCTL_NEW_IPV6_EXT_DIS	0x00020000
 
 /* Collision related configuration parameters */
-#define E1000_COLLISION_THRESHOLD	15
 #define E1000_CT_SHIFT			4
+#define E1000_COLLISION_THRESHOLD	15
 #define E1000_COLLISION_DISTANCE	63
 #define E1000_COLD_SHIFT		12
 
@@ -343,6 +337,8 @@
 #define E1000_TIPG_IPGR2_SHIFT		20
 
 #define MAX_JUMBO_FRAME_SIZE		0x3F00
+/* The datasheet maximum supported RX size is 9.5KB (9728 bytes) */
+#define MAX_RX_JUMBO_FRAME_SIZE		0x2600
 #define E1000_TX_PTR_GAP		0x1F
 
 /* Extended Configuration Control and Size */
@@ -441,12 +437,13 @@
 #define E1000_IMS_RXQ1		E1000_ICR_RXQ1	/* Rx Queue 1 Interrupt */
 #define E1000_IMS_TXQ0		E1000_ICR_TXQ0	/* Tx Queue 0 Interrupt */
 #define E1000_IMS_TXQ1		E1000_ICR_TXQ1	/* Tx Queue 1 Interrupt */
-#define E1000_IMS_OTHER		E1000_ICR_OTHER	/* Other Interrupts */
+#define E1000_IMS_OTHER		E1000_ICR_OTHER	/* Other Interrupt */
 
 /* Interrupt Cause Set */
 #define E1000_ICS_LSC		E1000_ICR_LSC	/* Link Status Change */
 #define E1000_ICS_RXSEQ		E1000_ICR_RXSEQ	/* Rx sequence error */
 #define E1000_ICS_RXDMT0	E1000_ICR_RXDMT0	/* Rx desc min. threshold */
+#define E1000_ICS_OTHER		E1000_ICR_OTHER	/* Other Interrupt */
 
 /* Transmit Descriptor Control */
 #define E1000_TXDCTL_PTHRESH	0x0000003F	/* TXDCTL Prefetch Threshold */
@@ -530,6 +527,12 @@
 #define E1000_TSYNCTXCTL_VALID		0x00000001	/* Tx timestamp valid */
 #define E1000_TSYNCTXCTL_ENABLED	0x00000010	/* enable Tx timestamping */
 
+/* HH Time Sync */
+#define E1000_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK	0x0000F000	/* max delay */
+#define E1000_TSYNCTXCTL_SYNC_COMP_ERR		0x20000000	/* sync err */
+#define E1000_TSYNCTXCTL_SYNC_COMP		0x40000000	/* sync complete */
+#define E1000_TSYNCTXCTL_START_SYNC		0x80000000	/* initiate sync */
+
 #define E1000_TSYNCRXCTL_VALID		0x00000001	/* Rx timestamp valid */
 #define E1000_TSYNCRXCTL_TYPE_MASK	0x0000000E	/* Rx type mask */
 #define E1000_TSYNCRXCTL_TYPE_L2_V2	0x00
@@ -549,6 +552,16 @@
 #define E1000_TIMINCA_INCPERIOD_SHIFT	24
 #define E1000_TIMINCA_INCVALUE_MASK	0x00FFFFFF
 
+/* ETQF register bit definitions */
+#define E1000_ETQF_1588			(1 << 30)
+#define E1000_FTQF_VF_BP		0x00008000
+#define E1000_FTQF_1588_TIME_STAMP	0x08000000
+#define E1000_FTQF_MASK			0xF0000000
+#define E1000_FTQF_MASK_PROTO_BP	0x10000000
+/* Immediate Interrupt Rx (A.K.A. Low Latency Interrupt) */
+#define E1000_IMIREXT_CTRL_BP	0x00080000	/* Bypass check of ctrl bits */
+#define E1000_IMIREXT_SIZE_BP	0x00001000	/* Packet size bypass */
+
 /* PCI Express Control */
 #define E1000_GCR_RXD_NO_SNOOP		0x00000001
 #define E1000_GCR_RXDSCW_NO_SNOOP	0x00000002
@@ -563,6 +576,8 @@
 				 E1000_GCR_TXD_NO_SNOOP    | \
 				 E1000_GCR_TXDSCW_NO_SNOOP | \
 				 E1000_GCR_TXDSCR_NO_SNOOP)
+
+#define E1000_MMDAC_FUNC_DATA	0x4000	/* Data, no post increment */
 
 /* NVM Control */
 #define E1000_EECD_SK		0x00000001	/* NVM Clock */
